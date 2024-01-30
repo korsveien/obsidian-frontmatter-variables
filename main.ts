@@ -1,5 +1,5 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile,} from 'obsidian';
-import * as assert from "assert";
+import {App, MarkdownPostProcessorContext, Plugin, PluginSettingTab, Setting,} from 'obsidian';
+import {codePointSize} from "@codemirror/state";
 
 // Remember to rename these classes and interfaces!
 
@@ -20,23 +20,31 @@ export default class FrontmatterVariablesPlugin extends Plugin {
 		const regex = /{{([a-zA-Z-_]+)}}/g;
 
 		this.registerMarkdownPostProcessor((element, context) => {
-			element.findAll("p").forEach(element => {
-				const text = element.innerText.trim();
-				const replacedText = text.replace(regex, (_:string, word: string) => context.frontmatter[word] ?? "{{NO_VALUE}}");
-				const newElement = element.createDiv({cls: 'cm-line', text: replacedText});
-				element.replaceWith(newElement)
-			})
+			["p", "h1", "h2", "h3", "h4", "h5", "h6", "code",].forEach(selector => {
+				element.findAll(selector).forEach(element => {
+					element.innerText = element.innerText.trim().replace(regex, this.replacePlaceholder(context))
+				})
+			});
 
-			element.findAll("code").forEach(element => {
-				const text = element.innerText.trim();
-				const replacedText = text.replace(regex, (_:string, word: string) => context.frontmatter[word] ?? "{{NO_VALUE}}");
-				const newElement = element.createSpan({text: replacedText});
-				element.replaceWith(newElement)
-			})
+			["li"].forEach(selector => {
+				element.findAll(selector).forEach(element => {
+					const textNode = element.lastChild;
+					if (textNode == null) {
+						throw Error("Cannot find <div> child node of <li>-node")
+					}
+					textNode.textContent = element.innerText.trim().replace(regex, this.replacePlaceholder(context))
+
+				})
+			});
+
 		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new SampleSettingTab(this.app, this));
+	}
+
+	private replacePlaceholder(context: MarkdownPostProcessorContext) {
+		return (_: string, word: string) => context.frontmatter[word] ?? "{{NO_VALUE}}";
 	}
 
 	onunload() {
