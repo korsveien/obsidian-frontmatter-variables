@@ -28,11 +28,17 @@ export default class FrontmatterVariablesPlugin extends Plugin {
 
 			["li"].forEach(selector => {
 				element.findAll(selector).forEach(element => {
-					const textNode = element.lastChild;
-					if (textNode == null) {
-						throw Error("Cannot find #text child node of <li>-node")
+					const code = element.find("code");
+
+					if (code) {
+						code.innerText = code.innerText.trim().replace(regex, this.replacePlaceholder(context))
+					} else {
+						const textNode = element.lastChild;
+						if (textNode == null) {
+							throw Error("Cannot find #text child node of <li>-node")
+						}
+						textNode.textContent = element.innerText.trim().replace(regex, this.replacePlaceholder(context))
 					}
-					textNode.textContent = element.innerText.trim().replace(regex, this.replacePlaceholder(context))
 
 				})
 			});
