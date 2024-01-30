@@ -33,15 +33,6 @@ export default class FrontmatterVariablesPlugin extends Plugin {
 				const newElement = element.createSpan({text: replacedText});
 				element.replaceWith(newElement)
 			})
-
-
-			// const codeElements = element.findAll("code")
-
-
-
-			// const replacedText = pageText?.replace(regex, (_: string, word: string) => context.frontmatter[word]);
-			// const newElement = element.createDiv({text: replacedText});
-			// element.replaceWith(newElement)
 		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
