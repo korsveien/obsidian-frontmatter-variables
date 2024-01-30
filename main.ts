@@ -22,14 +22,14 @@ export default class FrontmatterVariablesPlugin extends Plugin {
 		this.registerMarkdownPostProcessor((element, context) => {
 			element.findAll("p").forEach(element => {
 				const text = element.innerText.trim();
-				const replacedText = text.replace(regex, (_:string, word: string) => context.frontmatter[word]);
+				const replacedText = text.replace(regex, (_:string, word: string) => context.frontmatter[word] ?? "{{NO_VALUE}}");
 				const newElement = element.createDiv({cls: 'cm-line', text: replacedText});
 				element.replaceWith(newElement)
 			})
 
 			element.findAll("code").forEach(element => {
 				const text = element.innerText.trim();
-				const replacedText = text.replace(regex, (_:string, word: string) => context.frontmatter[word]);
+				const replacedText = text.replace(regex, (_:string, word: string) => context.frontmatter[word] ?? "{{NO_VALUE}}");
 				const newElement = element.createSpan({text: replacedText});
 				element.replaceWith(newElement)
 			})
