@@ -1,11 +1,11 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "obsidian-frontmatter-variables",
+	"name": "Obsidian Frontmatter Variables",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"description": "Replace variables in your page with properties from the frontmatter",
+	"author": "Peder Korsveien",
+	"authorUrl": "",
+	"fundingUrl": "",
 	"isDesktopOnly": false
 }
