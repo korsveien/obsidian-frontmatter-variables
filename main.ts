@@ -30,7 +30,7 @@ export default class FrontmatterVariablesPlugin extends Plugin {
 				element.findAll(selector).forEach(element => {
 					const textNode = element.lastChild;
 					if (textNode == null) {
-						throw Error("Cannot find <div> child node of <li>-node")
+						throw Error("Cannot find #text child node of <li>-node")
 					}
 					textNode.textContent = element.innerText.trim().replace(regex, this.replacePlaceholder(context))
 
