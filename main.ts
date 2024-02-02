@@ -21,9 +21,17 @@ export default class FrontmatterVariablesPlugin extends Plugin {
 
 		this.registerMarkdownPostProcessor((element, context) => {
 			["p", "h1", "h2", "h3", "h4", "h5", "h6", "code",].forEach(selector => {
-				element.findAll(selector).forEach(element => {
-					element.innerText = element.innerText.trim().replace(regex, this.replacePlaceholder(context))
-				})
+
+				if (selector === "code") {
+					console.log("code")
+					element.findAll(selector).forEach(element => {
+						element.innerText = element.innerText.trim().replace(regex, this.replacePlaceholder(context))
+					})
+				} else {
+					element.findAll(selector).forEach(element => {
+						element.innerText = element.innerText.trim().replace(regex, this.replacePlaceholder(context))
+					})
+				}
 			});
 
 			["li"].forEach(selector => {
