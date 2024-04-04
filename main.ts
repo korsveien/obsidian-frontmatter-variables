@@ -1,101 +1,129 @@
-import {App, MarkdownPostProcessorContext, Plugin, PluginSettingTab, Setting,} from 'obsidian';
-import {codePointSize} from "@codemirror/state";
+import {
+  App,
+  MarkdownPostProcessorContext,
+  Plugin,
+  PluginSettingTab,
+  Setting,
+} from "obsidian";
+import { codePointSize } from "@codemirror/state";
 
 // Remember to rename these classes and interfaces!
 
 interface Settings {
-	mySetting: string;
+  mySetting: string;
 }
 
 const DEFAULT_SETTINGS: Settings = {
-	mySetting: 'default'
-}
+  mySetting: "default",
+};
 
 export default class FrontmatterVariablesPlugin extends Plugin {
-	settings: Settings;
+  settings: Settings;
 
-	async onload() {
-		await this.loadSettings();
+  async onload() {
+    await this.loadSettings();
 
-		const regex = /{{([a-zA-Z-_]+)}}/g;
+    const regex = /{{\$frontmatter\.([a-zA-z-_]+)}}/g;
 
-		this.registerMarkdownPostProcessor((element, context) => {
-			["p", "h1", "h2", "h3", "h4", "h5", "h6", "code",].forEach(selector => {
+    this.registerMarkdownPostProcessor((element, context) => {
+      ["p", "h1", "h2", "h3", "h4", "h5", "h6", "code"].forEach((selector) => {
+        if (selector === "code") {
+          element.findAll(selector).forEach((codeblock) => {
+            const text = codeblock.innerText = codeblock.innerText.trim();
 
-				if (selector === "code") {
-					console.log("code")
-					element.findAll(selector).forEach(element => {
-						element.innerText = element.innerText.trim().replace(regex, this.replacePlaceholder(context))
-					})
-				} else {
-					element.findAll(selector).forEach(element => {
-						element.innerText = element.innerText.trim().replace(regex, this.replacePlaceholder(context))
-					})
-				}
-			});
+            const newText = text.replace(
+              regex,
+              this.replacePlaceholder(context),
+            );
 
-			["li"].forEach(selector => {
-				element.findAll(selector).forEach(element => {
-					const code = element.find("code");
+            console.log(newText);
 
-					if (code) {
-						code.innerText = code.innerText.trim().replace(regex, this.replacePlaceholder(context))
-					} else {
-						const textNode = element.lastChild;
-						if (textNode == null) {
-							throw Error("Cannot find #text child node of <li>-node")
-						}
-						textNode.textContent = element.innerText.trim().replace(regex, this.replacePlaceholder(context))
-					}
+            const newSpan = codeblock.createSpan({ text: newText });
+            codeblock.replaceWith(newSpan);
+          });
+        } else {
+          element.findAll(selector).forEach((element) => {
+            element.innerText = element.innerText.trim().replace(
+              regex,
+              this.replacePlaceholder(context),
+            );
+          });
+        }
+      });
 
-				})
-			});
+      ["li"].forEach((selector) => {
+        element.findAll(selector).forEach((element) => {
+          const code = element.find("code");
 
-		});
+          if (code) {
+            const text = code.innerText = code.innerText.trim();
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-	}
+            const newText = text.replace(
+              regex,
+              this.replacePlaceholder(context),
+            );
 
-	private replacePlaceholder(context: MarkdownPostProcessorContext) {
-		return (_: string, word: string) => context.frontmatter[word] ?? "{{NO_VALUE}}";
-	}
+            const newSpan = code.createSpan({ text: newText });
+            code.replaceWith(newSpan);
+          } else {
+            const textNode = element.lastChild;
+            if (textNode == null) {
+              throw Error("Cannot find #text child node of <li>-node");
+            }
+            textNode.textContent = element.innerText.trim().replace(
+              regex,
+              this.replacePlaceholder(context),
+            );
+          }
+        });
+      });
+    });
 
-	onunload() {
+    // This adds a settings tab so the user can configure various aspects of the plugin
+    this.addSettingTab(new SampleSettingTab(this.app, this));
+  }
 
-	}
+  private replacePlaceholder(context: MarkdownPostProcessorContext) {
+    return (_: string, word: string) =>
+      context.frontmatter[word] ?? "{{NO_VALUE}}";
+  }
 
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-	}
+  onunload() {
+  }
 
-	async saveSettings() {
-		await this.saveData(this.settings);
-	}
+  async loadSettings() {
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+  }
+
+  async saveSettings() {
+    await this.saveData(this.settings);
+  }
 }
 
 class SampleSettingTab extends PluginSettingTab {
-	plugin: FrontmatterVariablesPlugin;
+  plugin: FrontmatterVariablesPlugin;
 
-	constructor(app: App, plugin: FrontmatterVariablesPlugin) {
-		super(app, plugin);
-		this.plugin = plugin;
-	}
+  constructor(app: App, plugin: FrontmatterVariablesPlugin) {
+    super(app, plugin);
+    this.plugin = plugin;
+  }
 
-	display(): void {
-		const {containerEl} = this;
+  display(): void {
+    const { containerEl } = this;
 
-		containerEl.empty();
+    containerEl.empty();
 
-		new Setting(containerEl)
-			.setName('Setting #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
-	}
+    new Setting(containerEl)
+      .setName("Setting #1")
+      .setDesc("It's a secret")
+      .addText((text) =>
+        text
+          .setPlaceholder("Enter your secret")
+          .setValue(this.plugin.settings.mySetting)
+          .onChange(async (value) => {
+            this.plugin.settings.mySetting = value;
+            await this.plugin.saveSettings();
+          })
+      );
+  }
 }
