@@ -23,7 +23,7 @@ export default class FrontmatterVariablesPlugin extends Plugin {
   async onload() {
     await this.loadSettings();
 
-    const regex = /{{\$frontmatter\.([a-zA-z-_]+)}}/g;
+    const regex = /{{\s?\$frontmatter\.([a-zA-z-_]+)\s?}}/g;
 
     this.registerMarkdownPostProcessor((element, context) => {
       ["p", "h1", "h2", "h3", "h4", "h5", "h6", "code"].forEach((selector) => {
@@ -35,8 +35,6 @@ export default class FrontmatterVariablesPlugin extends Plugin {
               regex,
               this.replacePlaceholder(context),
             );
-
-            console.log(newText);
 
             const newSpan = codeblock.createSpan({ text: newText });
             codeblock.replaceWith(newSpan);
@@ -53,28 +51,22 @@ export default class FrontmatterVariablesPlugin extends Plugin {
 
       ["li"].forEach((selector) => {
         element.findAll(selector).forEach((element) => {
-          const code = element.find("code");
-
-          if (code) {
-            const text = code.innerText = code.innerText.trim();
+          element.findAll("code").forEach((codeblock) => {
+            const text = codeblock.innerText = codeblock.innerText.trim();
 
             const newText = text.replace(
               regex,
               this.replacePlaceholder(context),
             );
 
-            const newSpan = code.createSpan({ text: newText });
-            code.replaceWith(newSpan);
-          } else {
-            const textNode = element.lastChild;
-            if (textNode == null) {
-              throw Error("Cannot find #text child node of <li>-node");
-            }
-            textNode.textContent = element.innerText.trim().replace(
-              regex,
-              this.replacePlaceholder(context),
+            const newCodeBlock = codeblock.createEl(
+              "code",
+              {
+                text: newText,
+              },
             );
-          }
+            codeblock.replaceWith(newCodeBlock);
+          });
         });
       });
     });
