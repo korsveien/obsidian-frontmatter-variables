@@ -91,13 +91,9 @@ class SampleSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
-<<<<<<< HEAD
 	display(): void {
+
 		const { containerEl } = this;
-=======
-	display(): void {
-		const { containerEl } = this;
->>>>>>> 2f6dbf3 (Some formatting)
 
 		containerEl.empty();
 
